@@ -5,20 +5,18 @@ options
 
 PARSER_BEGIN(Grammar)
 /** */
-/** hello world */
 
 import java.io.*;
 
 public class Grammar
 {
   public static S1SymTab st;
-
   public static S1CodeGen cg;
 
   /** Main entry point. */
   public static void main(String args []) throws ParseException
   {
-    System.out.println("S1 compiler written by 15 year old...");
+    //System.out.println("S1 compiler written by 15 year old...");
     PrintWriter outfile = null;
     st = new S1SymTab();
     cg = new S1CodeGen(outfile, st);
@@ -61,7 +59,6 @@ void program() :
 void declarations() :
 {Token t;}
 {
-  
   (
     < VARSY >
     t=<ID>
@@ -102,18 +99,15 @@ void assignment() :
   {
     int size = st.getSize();
     int order = st.enter(t.image);
-    int address = order + 10000;
     if (st.getSize() >  size)
-    {System.out.println(t.image + " was not declared"); } 
-    else 
+    {System.out.println(t.image + " was not declared"); }
+    int address = order + 10000;
     cg.emitInstruction("MVC " + address + ",B");
-    //cg.emitInstruction("STR B,A");
+    cg.emitInstruction("STR "+ "B" + ",A");
   }
   "=" expression()
   {
-    
-    //cg.emitInstruction("MVC "+ result + ",A");
-	cg.emitInstruction("STR B,A");
+	//cg.emitInstruction("STR B,A");
   }
 }
 
