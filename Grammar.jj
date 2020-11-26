@@ -1,0 +1,237 @@
+options
+{
+  static = true;
+}
+
+PARSER_BEGIN(Grammar)
+/** */
+/** hello world */
+
+import java.io.*;
+
+public class Grammar
+{
+  public static S1SymTab st;
+
+  public static S1CodeGen cg;
+
+  /** Main entry point. */
+  public static void main(String args []) throws ParseException
+  {
+    //System.out.println("S1 compiler written by 14 year old...");
+    PrintWriter outfile = null;
+    st = new S1SymTab();
+    cg = new S1CodeGen(outfile, st);
+    Grammar parser = new Grammar(System.in);
+    parser.program();
+  }
+}
+
+PARSER_END(Grammar)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  < ID : [ "A"-"Z" ] ([ "A"-"Z", "a"-"z", "0"-"9" ])* >
+| < NUM : ([ "0"-"9" ])+ >
+| < ASSIGN : "=" >
+| < IFSY : "if" >
+| < WHILESY : "while" >
+| < THENSY : "then" >
+| < ELSESY : "else" >
+| < PROGRAMSY : "program" >
+| < ENDSY : "end" >
+| < VARSY : "var" >
+| < PRINT : "print" >
+}
+
+void program() :
+{}
+{
+  < PROGRAMSY > < ID > ";" declarations() statementList() < ENDSY >
+}
+
+void declarations() :
+{Token t;}
+{
+  
+  (
+    < VARSY >
+    t=<ID>
+    {
+      int size = st.getSize();
+      st.enter(t.image);
+      if (size == st.getSize()) {
+        System.out.println("error");
+		}
+    }
+    ";"
+  )*
+}
+
+void statementList() :
+{}
+{
+  (
+    statement() ";"
+  )*
+}
+
+void statement() :
+{}
+{
+  assignment()
+| ifStatement()
+| whileStatement()
+| print()
+}
+
+void assignment() :
+{
+  Token t;
+}
+{
+  t =< ID >
+  {
+    int size = st.getSize();
+    int order = st.enter(t.image);
+    int address = order + 10000;
+    if (st.getSize() >  size)
+    {System.out.println(t.image + " was not declared"); } 
+    else 
+    cg.emitInstruction("MVC " + address + ",B");
+    //cg.emitInstruction("STR B,A");
+  }
+  "=" expression()
+  {
+    
+    //cg.emitInstruction("MVC "+ result + ",A");
+	cg.emitInstruction("STR B,A");
+  }
+}
+
+void ifStatement() :
+{}
+{
+  < IFSY > condition() < THENSY > "{" statementList() "}" < ELSESY > "{" statementList() "}"
+}
+
+void whileStatement() :
+{}
+{
+  < WHILESY > condition() "{" statementList() "}"
+}
+
+void condition() :
+{}
+{
+  "(" simplexp() rel() simplexp() ")"
+}
+
+void rel() :
+{}
+{
+  "<"
+| "=="
+| " >"
+}
+
+void simplexp() :
+{Token t;}
+{
+  < ID >
+| < NUM >
+}
+
+void expression() :
+{}
+{
+  term() 
+  (
+    "+" term()
+    {
+      cg.emitInstruction("LDC "+ "B" + ",A");
+      cg.emitInstruction("ADC "+ "-1" + ",B");
+      cg.emitInstruction("LDC "+ "B" + ",C");
+      cg.emitInstruction("ADR "+ "C" + ",A");
+      cg.emitInstruction("STR "+ "B" + ",A"); 
+    }
+  | "-" term()
+   {
+      cg.emitInstruction("LDC "+ "B" + ",A");
+      cg.emitInstruction("ADC "+ "-1" + ",B");
+      cg.emitInstruction("LDC "+ "B" + ",C");
+      cg.emitInstruction("MLC "+ "-1" + ",C");
+      cg.emitInstruction("ADR "+ "C" + ",A");
+      cg.emitInstruction("STR "+ "B" + ",A"); 
+    }
+  )* 
+}
+
+void term() :
+{}
+{
+  factor()
+  (
+    "*" factor()
+    {
+      cg.emitInstruction("LDC "+ "B" + ",A");
+      cg.emitInstruction("ADC "+ "-1" + ",B");
+      cg.emitInstruction("LDC "+ "B" + ",C");
+      cg.emitInstruction("MLR "+ "C" + ",A");
+      cg.emitInstruction("STR "+ "B" + ",A"); 
+    }
+  | "/" factor()
+  	{
+      cg.emitInstruction("LDC "+ "B" + ",A");
+      cg.emitInstruction("ADC "+ "-1" + ",B");
+      cg.emitInstruction("LDC "+ "B" + ",C");
+      cg.emitInstruction("DVR "+ "C" + ",A");
+      cg.emitInstruction("STR "+ "B" + ",A"); 
+    }  
+  )* 
+}
+
+void factor() :
+{
+  Token t;
+}
+{
+  t = < ID >
+  {
+    int size = st.getSize();
+    int order = st.enter(t.image);
+    if (st.getSize() >  size)
+    {System.out.println(t.image + " was not declared"); }
+    int address = order + 10000;
+    cg.emitInstruction("LDC "+ address + ",A");
+    cg.emitInstruction("ADC "+ "1" + ",B");
+    cg.emitInstruction("STR "+ "B" + ",A");
+  }
+| 
+  t = < NUM >
+  {
+    cg.emitInstruction("MVC "+ t.image + ",A");
+    cg.emitInstruction("ADC "+ "1" + ",B");
+    cg.emitInstruction("STR "+ "B" + ",A"); 
+  }
+| 
+  t = "(" expression() ")" 
+}
+
+void print() :
+{}
+{
+  < PRINT >
+  (
+    < ID >
+  | < NUM >
+  )
+}
