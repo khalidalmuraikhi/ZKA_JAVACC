@@ -18,7 +18,7 @@ public class Grammar
   /** Main entry point. */
   public static void main(String args []) throws ParseException
   {
-    //System.out.println("S1 compiler written by 14 year old...");
+    System.out.println("S1 compiler written by 15 year old...");
     PrintWriter outfile = null;
     st = new S1SymTab();
     cg = new S1CodeGen(outfile, st);
