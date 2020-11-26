@@ -103,7 +103,7 @@ void assignment() :
     {System.out.println(t.image + " was not declared"); }
     int address = order + 10000;
     cg.emitInstruction("MVC " + address + ",B");
-    cg.emitInstruction("STR "+ "B" + ",A");
+    //cg.emitInstruction("STR "+ "B" + ",A");
   }
   "=" expression()
   {
@@ -151,17 +151,17 @@ void expression() :
   (
     "+" term()
     {
-      cg.emitInstruction("LDC "+ "B" + ",A");
+      cg.emitInstruction("LDR "+ "B" + ",A");
       cg.emitInstruction("ADC "+ "-1" + ",B");
-      cg.emitInstruction("LDC "+ "B" + ",C");
+      cg.emitInstruction("LDR "+ "B" + ",C");
       cg.emitInstruction("ADR "+ "C" + ",A");
       cg.emitInstruction("STR "+ "B" + ",A"); 
     }
   | "-" term()
    {
-      cg.emitInstruction("LDC "+ "B" + ",A");
+      cg.emitInstruction("LDR "+ "B" + ",A");
       cg.emitInstruction("ADC "+ "-1" + ",B");
-      cg.emitInstruction("LDC "+ "B" + ",C");
+      cg.emitInstruction("LDR "+ "B" + ",C");
       cg.emitInstruction("MLC "+ "-1" + ",C");
       cg.emitInstruction("ADR "+ "C" + ",A");
       cg.emitInstruction("STR "+ "B" + ",A"); 
@@ -176,17 +176,17 @@ void term() :
   (
     "*" factor()
     {
-      cg.emitInstruction("LDC "+ "B" + ",A");
+      cg.emitInstruction("LDR "+ "B" + ",A");
       cg.emitInstruction("ADC "+ "-1" + ",B");
-      cg.emitInstruction("LDC "+ "B" + ",C");
+      cg.emitInstruction("LDR "+ "B" + ",C");
       cg.emitInstruction("MLR "+ "C" + ",A");
       cg.emitInstruction("STR "+ "B" + ",A"); 
     }
   | "/" factor()
   	{
-      cg.emitInstruction("LDC "+ "B" + ",A");
+      cg.emitInstruction("LDR "+ "B" + ",A");
       cg.emitInstruction("ADC "+ "-1" + ",B");
-      cg.emitInstruction("LDC "+ "B" + ",C");
+      cg.emitInstruction("LDR "+ "B" + ",C");
       cg.emitInstruction("DVR "+ "C" + ",A");
       cg.emitInstruction("STR "+ "B" + ",A"); 
     }  
