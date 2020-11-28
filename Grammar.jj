@@ -117,7 +117,7 @@ void assignment() :
 void ifStatement() :
 {}
 {
-  < IFSY > condition() < THENSY > "{" statementList() "}" < ELSESY > "{" statementList() "}"
+  < IFSY > condition() < THENSY > "{" statementList() "}" {cg.emitInstruction("JMC afterelses"); } < ELSESY > { cg.emitInstruction("elses:"); } "{" statementList() "}" { cg.emitInstruction("afterelses:"); } 
 }
 
 void whileStatement() :
@@ -127,24 +127,83 @@ void whileStatement() :
 }
 
 void condition() :
-{}
+{Token t1, t2;}
 {
-  "(" simplexp() rel() simplexp() ")"
+  "(" simplexp() t1=rel() simplexp() ")"
+  {
+    cg.emitInstruction("LDR "+ "B" + ",A");
+    cg.emitInstruction("ADC "+ "-1" + ",B");
+    cg.emitInstruction("LDR "+ "B" + ",C");
+
+
+    switch (t1.image) {
+		case ">":
+		
+		cg.emitInstruction("DVR "+ "C" + ",A"); // A div by C and its true when the result is 0.xxxx
+		cg.emitInstruction("JZC "+ "elses" + ",A"); // jump to elses if A !=0
+		
+
+			break;
+		case "==":
+		cg.emitInstruction("MLC "+ "-1" + ",C");
+		cg.emitInstruction("ADR "+ "C" + ",A"); // A must be zero to be true
+		
+
+			break;
+
+		case "<":
+		cg.emitInstruction("DVR "+ "A" + ",C"); // C div by A and its true when the result is 0.xxxx
+		cg.emitInstruction("JZC "+ "elses" + ",C"); // jump to elses if C !=0
+		
+
+			break;
+
+		default:
+			break;
+		}
+	
+    
+  }
 }
 
-void rel() :
-{}
+Token rel() :
+{Token t;}
 {
-  "<"
-| "=="
-| " >"
+  t="<"
+  {
+    return t;
+  }
+| t="=="
+  {
+    return t;
+  }
+| t=">"
+  {
+    return t;
+  }
+  
 }
 
 void simplexp() :
 {Token t;}
 {
-  < ID >
-| < NUM >
+  t= < ID >
+  {
+    int size = st.getSize();
+    int order = st.enter(t.image);
+    if (st.getSize() >  size)
+    {System.out.println(t.image + " was not declared"); }
+    int address = order + 10000;
+    cg.emitInstruction("LDC "+ address + ",A");
+    cg.emitInstruction("ADC "+ "1" + ",B");
+    cg.emitInstruction("STR "+ "B" + ",A");
+  }
+| t= < NUM >
+  {
+    cg.emitInstruction("MVC "+ t.image + ",A");
+    cg.emitInstruction("ADC "+ "1" + ",B");
+    cg.emitInstruction("STR "+ "B" + ",A"); 
+  }
 }
 
 void expression() :
