@@ -63,6 +63,8 @@ void declarations() :
     < VARSY >
     t=<ID>
     {
+
+      /// check for deplication and type checking
       int size = st.getSize();
       st.enter(t.image);
       if (size == st.getSize()) {
@@ -103,11 +105,12 @@ void assignment() :
     {System.out.println(t.image + " was not declared"); }
     int address = order + 10000;
     cg.emitInstruction("MVC " + address + ",B");
-    //cg.emitInstruction("STR "+ "B" + ",A");
   }
   "=" expression()
   {
-	//cg.emitInstruction("STR B,A");
+    cg.emitInstruction("LDR "+ "B" + ",A");
+    cg.emitInstruction("ADC "+ "-1" + ",B");
+	cg.emitInstruction("STR B,A");
   }
 }
 
